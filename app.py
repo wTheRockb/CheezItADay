@@ -2,6 +2,7 @@ import tweepy
 import os
 from dotenv import load_dotenv
 import sqlite3
+from PIL import Image
 
 load_dotenv()
 
@@ -26,16 +27,13 @@ def get_untweeted_file_name(db_cur):
     raise "Cannot find untweeted photo."
 
 
-def save_file_as_tweeted(db_cur, db_conn, file_name, tweet_url):
-    db_cur.execute(
-        """
-        INSERT INTO tweets (file_name, tweet_url, occurred_at) VALUES
-        (%s, %s, CURRENT_TIMESTAMP)
-        """, [file_name, tweet_url])
-    db_conn.commit()
+def compress_file(file_name):
+    img = Image.open(f"photos/{file_name}")
+    img.save("photos/current.JPG", optimize=True, quality=91)
+    return "current.JPG"
 
 
-def tweet_new_photo(db_cur, db_conn, file_name):
+def tweet_new_photo(db_cur, db_conn, compressed_file_name, file_name):
     auth = tweepy.OAuthHandler(
         os.environ['API_KEY'],
         os.environ['API_SECRET']
@@ -47,12 +45,21 @@ def tweet_new_photo(db_cur, db_conn, file_name):
     api = tweepy.API(auth)
 
     # Upload image
-    media = api.media_upload(file_name)
+    media = api.media_upload(f"photos/{compressed_file_name}")
 
     # Post tweet with image
     post_result = api.update_status(status=file_name, media_ids=[media.media_id])
-    tweet_url = post_result.id
-    save_file_as_tweeted(db_cur, db_conn, file_name, tweet_url)
+
+    return post_result.id
+
+
+def save_file_as_tweeted(db_cur, db_conn, file_name, tweet_url):
+    db_cur.execute(
+        """
+        INSERT INTO tweets (file_name, tweet_url, occurred_at) VALUES
+        (%s, %s, CURRENT_TIMESTAMP)
+        """, [file_name, tweet_url])
+    db_conn.commit()
 
 
 def init_db_conn():
@@ -63,7 +70,10 @@ def main():
     db_conn = init_db_conn()
     db_cur = db_conn.cursor()
     file_name = get_untweeted_file_name(db_cur)
-    tweet_new_photo(db_cur, db_conn, file_name)
+    compressed_file_name = compress_file(file_name)
+    tweet_url = tweet_new_photo(db_cur, db_conn, compressed_file_name, file_name)
+    save_file_as_tweeted(db_cur, db_conn, file_name, tweet_url)
+
 
 
 if __name__ == "__main__":
