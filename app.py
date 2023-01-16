@@ -12,13 +12,7 @@ FILE_SIZE_LIMIT = 5242880
 DEBUG_MODE = False
 
 
-def main():
-    db_conn = init_db_conn()
-    file_name = get_untweeted_file_name()
-    tweet_new_photo(db_conn, file_name)
-
-
-def get_untweeted_filename():
+def get_untweeted_file_name(db_cur):
     photo_names = os.listdir("./photos")
     db_cur.execute(
         """
@@ -41,7 +35,7 @@ def save_file_as_tweeted(db_cur, db_conn, file_name, tweet_url):
     db_conn.commit()
 
 
-def tweet_new_photo(db_cur, db_conn, file_name, price):
+def tweet_new_photo(db_cur, db_conn, file_name):
     auth = tweepy.OAuthHandler(
         os.environ['API_KEY'],
         os.environ['API_SECRET']
@@ -63,6 +57,13 @@ def tweet_new_photo(db_cur, db_conn, file_name, price):
 
 def init_db_conn():
     return sqlite3.connect("cheezit.db")
+
+
+def main():
+    db_conn = init_db_conn()
+    db_cur = db_conn.cursor()
+    file_name = get_untweeted_file_name(db_cur)
+    tweet_new_photo(db_cur, db_conn, file_name)
 
 
 if __name__ == "__main__":
