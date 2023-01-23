@@ -8,6 +8,9 @@ cur = con.cursor()
 cur.execute('''CREATE TABLE tweets
                (tweeted_at timestamp , file_name text, tweet_url text)''')
 
+cur.execute('''CREATE TABLE tik_tok
+               (uploaded_at timestamp , file_name text)''')
+
 # Save (commit) the changes
 con.commit()
 

@@ -1,3 +1,6 @@
 tweepy
 python-dotenv
 Pillow
+ez_setup
+moviepy
+gTTS
