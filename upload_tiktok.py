@@ -36,9 +36,6 @@ def crop_image_to_ideal_size(file_name):
     border = (1875, 0, 1875, 0)
     ImageOps.crop(im, border).save("cropped.JPG")
     return "cropped.JPG"
-    # cropped_file = "cropped.JPG"
-    # im.save(cropped_file)
-    # return cropped_file
 
 
 def generate_audio(index):
@@ -80,18 +77,19 @@ def main():
     image_clip = ImageClip(cropped_image, duration=5)
     image_clip.audio = AudioFileClip(audio_file_name)
 
-    # txt_clip = TextClip(f"Day 1 of posting a picture of every cheez it in this box.", fontsize=175, bg_color="white",
-    #                     font='Courier-BoldOblique', color='black', method='caption', size=(1850, None))
+    txt_clip = TextClip(f"Day 1 of posting a picture of every cheez it in this box.", fontsize=175, bg_color="white",
+                        font='Courier-BoldOblique', color='black', method='caption', size=(1850, None))
 
     # setting position of text in the center and duration will be 10 seconds
-    # txt_clip = txt_clip.set_pos(('center', 'bottom')).set_duration(3)
+    txt_clip = txt_clip.set_pos(('center', 'bottom')).set_duration(5)
 
     # Overlay the text clip on the first video clip
-    # video = CompositeVideoClip([image_clip, txt_clip])
-    # image_clip.set_duration('00:00:04.35')
-    image_clip.write_videofile('current.mp4', fps=60)
-    image_clip.close
+    video = CompositeVideoClip([image_clip, txt_clip])
+    video.set_duration('00:00:04.35')
+    video.write_videofile('current.mp4', fps=60)
+    video.close
 
 
 if __name__ == "__main__":
     main()
+
